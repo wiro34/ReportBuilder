@@ -1,23 +1,47 @@
-<li class="collection-item step <%= step['status'] %>">
+<li class="step <%= step['status'] %>">
   <% if step['before'] %>
-      <% step['before'].each do |hook| %>
-          <%= get('hook').result(binding) %>
-      <% end %>
+    <% step['before'].each do |hook| %>
+      <%= get('hook').result(binding) %>
+    <% end %>
   <% end %>
 
-  <b><%= step['keyword'] %></b> <%= step['name'] %> (<%= duration(step['duration']) %>)
+  <% (color, letter) = case step['status']
+                       when 'passed'
+                         %w(success &#x2713;)
+                       when 'failed'
+                         %w(danger &#x2715;)
+                       when 'skipped'
+                         %w(secondary &#x2212;)
+                       else
+                         %w(warning &#x0021;)
+                       end %>
+  <span class="badge badge-pill badge-<%= color %>"
+        title="<%= step['status'].capitalize %>"><%= letter %></span>&nbsp;
+
+  <strong><%= step['keyword'] %></strong> <%= step['name'] %>
+  <span class="duration badge badge-light"><%= duration(step['duration']) %></span>
 
   <% if step['doc_string'] %>
-     <%= '<br/><pre>' + ERB::Util.html_escape(step['doc_string']['value']) + '</pre>' %>
+    <div class="card bg-light">
+      <%= '<pre><code>' + ERB::Util.html_escape(step['doc_string']['value']) + '</code></pre>' %>
+    </div>
   <% end %>
 
   <% if step['rows'] %>
-      <% step['rows'].each do |row| %>
-          <%= '<br/>| ' %>
+    <table class="table table-sm">
+      <tr>
+        <% step['rows'].first['cells'].each do |cell| %>
+          <th><%= cell %></th>
+        <% end %>
+      </tr>
+      <% step['rows'].drop(1).each do |row| %>
+        <tr>
           <% row['cells'].each do |cell| %>
-              <%= cell + ' | ' %>
+            <td><%= cell %></td>
           <% end %>
+        </tr>
       <% end %>
+    </table>
   <% end %>
 
   <%#step part as hook%>
@@ -25,8 +49,8 @@
   <%= get('hook').result(binding) %>
 
   <% if step['after'] %>
-      <% step['after'].each do |hook| %>
-          <%= get('hook').result(binding) %>
-      <% end %>
+    <% step['after'].each do |hook| %>
+      <%= get('hook').result(binding) %>
+    <% end %>
   <% end %>
 </li>

@@ -1,35 +1,50 @@
-<div id="<%= sid %>" class="modal modal-fixed-footer">
-  <div class="modal-content">
-
+<div id="<%= sid %>" class="card">
+  <div class="card-header scenario <%= scenario['status'] %>"
+       data-toggle="collapse" data-target="#<%= sid %>Body" aria-expanded="false" aria-controls="<%= fid %>Body">
     <% if scenario['tags'] %>
+      <div class="tags">
         <% scenario['tags'].each do |tag| %>
-            <div class="chip"><i class="material-icons rotate-45">label</i><%= tag['name'] %></div>
+          <span class="tag badge badge-secondary"><%= tag['name'] %></span>
         <% end %>
+      </div>
     <% end %>
 
-    <h5><%= scenario['name'] %> (<%= duration(scenario['duration']) %>)</h5>
-    <%= feature['uri'] %>:<%= scenario['line'] %>
+    <% color = case scenario['status']
+               when 'passed'
+                 'success'
+               when 'failed'
+                 'danger'
+               when 'skipped'
+                 'secondary'
+               else
+                 'warning'
+               end %>
+    <span class="scenario-status badge badge-<%= color %>"><%= scenario['status'] %></span>
+    <span class="duration badge badge-light"><%= duration(scenario['duration']) %></span>
 
+    <h5>
+      <span class="collapse-indicator"></span>
+      <%= scenario['name'] %>
+    </h5>
+  </div>
+
+  <div class="card-body collapse" id="<%= sid %>Body">
     <% if scenario['before'] %>
-        <% scenario['before'].each do |hook| %>
-            <%= get('hook').result(binding) %>
-        <% end %>
+      <% scenario['before'].each do |hook| %>
+        <%= get('hook').result(binding) %>
+      <% end %>
     <% end %>
 
-    <ul class="collection stepList">
+    <ul class="">
       <% scenario['steps'].each do |step| %>
-          <%= get('step').result(binding) %>
+        <%= get('step').result(binding) %>
       <% end %>
     </ul>
 
     <% if scenario['after'] %>
-        <% scenario['after'].each do |hook| %>
-            <%= get('hook').result(binding) %>
-        <% end %>
+      <% scenario['after'].each do |hook| %>
+        <%= get('hook').result(binding) %>
+      <% end %>
     <% end %>
-  </div>
-
-  <div class="modal-footer">
-    <span class="modal-action modal-close waves-effect waves-green btn-flat"><i class="material-icons">close</i></span>
   </div>
 </div>
