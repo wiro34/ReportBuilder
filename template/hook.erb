@@ -1,14 +1,16 @@
 <% if hook['output'] %>
-    <% hook['output'].each do |output| %>
-        <pre><%= output %></pre>
-    <% end %>
+    <div class="card bg-light">
+        <% hook['output'].each do |output| %>
+            <pre><%= output %></pre>
+        <% end %>
+    </div>
 <% end %>
 
 <% if hook['result']['error_message'] %>
     <% error = ERB::Util.html_escape hook['result']['error_message'] %>
     <% scenario['error'] = error.split("\n").first %>
     <% errors << scenario['error'] %>
-    <pre><%= error %></pre>
+  <div class="card bg-danger"><pre><%= error %></pre></div>
 <% end %>
 
 <% if hook['embeddings'] %>
@@ -16,7 +18,9 @@
         <br>
         <% if embedding['mime_type'] =~ /^image\/(png|gif|jpg|jpeg)/ %>
             <% if options[:include_images] %>
-                <img class="materialboxed" data-caption='<%= scenario['name'] %>' width="250" src="data:<%= embedding['mime_type'] %>;base64,<%= embedding['data'] %>">
+                <a class="img-open">
+                    <img class="img-thumbnail" data-caption='<%= scenario['name'] %>' width="250" src="data:<%= embedding['mime_type'] %>;base64,<%= embedding['data'] %>">
+                </a>
             <% end %>
         <% elsif embedding['mime_type'] =~ /^text\/plain/ %>
             <% if embedding['data'].include?('|||') %>

@@ -1,37 +1,64 @@
 <!DOCTYPE html>
 <html>
-  <%= get('head').result(binding) %>
-  <body>
-    <%= get('header').result(binding) %>
+<%= get('head').result(binding) %>
+<body>
+<%= get('header').result(binding) %>
 
-    <% errors = [] %>
+<% errors = [] %>
 
-    <% gid = 'g0' %>
-    <% features = groups.first['features'] %>
+<% gid = 'g0' %>
+<% features = groups.first['features'] %>
 
-    <%= get('scenarios').result(binding) %>
+<main class="container <%= options[:color] %>">
+  <section id="overview">
+    <%= get('overview').result(binding) %>
+  </section>
 
-    <main class="<%= options[:color] %> lighten-5">
-      <div class="row">
+  <section id="features">
+    <%= get('features').result(binding) %>
+  </section>
+</main>
 
-        <div id="overview" class="col s12 <%= options[:color] %> lighten-5">
-          <%= get('overview').result(binding) %>
-        </div>
+<%= get('footer').result(binding) %>
 
-        <div id="features" class="col s12 <%= options[:color] %> lighten-5 white-text">
-          <%= get('features').result(binding) %>
-        </div>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/wiro34/ReportBuilder@master/js/report.builder.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  <%
+    colors = (Hash.new { '#999' }).merge(
+      working: '#5cb85c',
+      broken: '#d9534f',
+      incomplete: '#f0ad4e',
+      passed: '#5cb85c',
+      failed: '#d9534f',
+      notdefined: '#999',
+      pending: '#999',
+      skipped: '#5bc0de',
+      ambiguous: '#428bca',
+    )
+    suite = {
+      features: features.group_by { |feature| feature['status'] }
+                        .map{ |status, list| [status, [list.length, colors[status.to_sym]]] }
+                        .to_h,
+      scenarios: features.map{ |f| f['elements'] }
+                         .flatten
+                         .group_by { |feature| feature['status'] }
+                         .map{ |status, list| [status, [list.length, colors[status.to_sym]]] }
+                         .to_h
+    }
+  %>
 
-        <div id="summary" class="col s12 <%= options[:color] %> lighten-5">
-          <%= get('summary').result(binding) %>
-        </div>
-
-        <div id="errors" class="col s12 <%= options[:color] %> lighten-5">
-          <%= get('errors').result(binding) %>
-        </div>
-      </div>
-    </main>
-
-    <%= get('footer').result(binding) %>
-  </body>
+  google.load('visualization', '1', {packages: ['corechart']});
+  google.setOnLoadCallback(function() {
+    drawChart('Features', {
+      <%= suite[:features].map{|status, count| "'#{status}': #{count}"}.join(', ') %>
+    });
+  });
+  google.setOnLoadCallback(function() {
+    drawChart('Scenarios', {
+      <%= suite[:scenarios].map{|status, count| "'#{status}': #{count}"}.join(', ') %>
+    });
+  });
+</script>
+</body>
 </html>

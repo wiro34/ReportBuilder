@@ -1,16 +1,41 @@
-<li class="feature <%= feature['status'] %>">
-  <div class="collapsible-header <%= options[:color] %> lighten-1 waves-effect waves-light">
-    <i class="material-icons">featured_play_list</i>
-    <b><%= feature['keyword'] %></b>&nbsp;<%= feature['name'] %>&nbsp;(<%= duration(feature['duration']) %>)
+<div class="card">
+  <div class="card-header feature <%= feature['status'] %>"
+       data-toggle="collapse" data-target="#<%= fid %>Body" aria-expanded="true" aria-controls="<%= fid %>Body">
+
+    <% if feature['tags'] %>
+      <div class="tags">
+        <% feature['tags'].each do |tag| %>
+          <span class="tag badge badge-secondary"><%= tag['name'] %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% feature['elements']
+           .group_by {|scenario| scenario['status']}
+           .map {|status, list| [status, list.length]}
+           .each do |status, count| %>
+      <% color = case status
+                           when 'passed'
+                             'success'
+                           when 'failed'
+                             'danger'
+                           when 'skipped'
+                             'secondary'
+                           else
+                             'warning'
+                           end %>
+        <span class="feature-status badge badge-<%= color %>"><%= count %>&nbsp;<%= status %></span>
+    <% end %>
+
+    <span class="duration badge badge-light"><%= duration(feature['duration']) %></span>
+
+    <h5>
+      <span class="collapse-indicator"></span>
+      <%= feature['keyword'] %>:&nbsp;<%= feature['name'] %>
+    </h5>
   </div>
 
-  <div class="collapsible-body <%= options[:color] %> lighten-4">
-    <div class="collection scenarioList <%= options[:color] %>">
-      <% feature['elements'].each_with_index do |scenario, s| %>
-        <a class="collection-item scenario modal-trigger waves-effect waves-light white-text <%= scenario['status'] %>" href="#<%= "#{fid}s#{s}" %>">
-          <b><%= scenario['keyword'] %></b> <%= scenario['name'] %>&nbsp;(<%= duration(scenario['duration']) %>)
-        </a>
-      <% end %>
-    </div>
+  <div class="card-body collapse show" id="<%= fid %>Body">
+    <%= get('scenarios').result(binding) %>
   </div>
-</li>
+</div>
