@@ -3,6 +3,7 @@ require 'erb'
 require 'pathname'
 require 'base64'
 require 'ostruct'
+require 'htmlcompressor'
 
 require 'report_builder/core-ext/hash'
 
@@ -38,8 +39,10 @@ module ReportBuilder
 
       html_report_path = options[:html_report_path] || options[:report_path]
       if options[:report_types].include? 'HTML'
+        compressor = HtmlCompressor::Compressor.new
         File.open(html_report_path + '.html', 'w') do |file|
-          file.write get(groups.size > 1 ? 'group_report' : 'report').result(binding).gsub('  ', '').gsub("\n\n", '')
+          html = compressor.compress get(groups.size > 1 ? 'group_report' : 'report').result(binding)
+          file.write html
         end
       end
 
